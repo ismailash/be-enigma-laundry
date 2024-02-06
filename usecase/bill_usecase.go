@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"github.com/ismailash/be-enigma-laundry/utils/model_util"
 	"log"
 
 	req "github.com/ismailash/be-enigma-laundry/model/dto/req"
@@ -12,6 +13,7 @@ import (
 type BillUseCase interface {
 	RegisterNewBill(billReq req.BillReqDTO) (entity.Bill, error)
 	FindById(id string) (entity.Bill, error)
+	GetBillsWithPagination(paging model_util.Paging) ([]entity.Bill, error)
 }
 
 type billUseCase struct {
@@ -77,4 +79,13 @@ func (u *billUseCase) FindById(id string) (entity.Bill, error) {
 		return entity.Bill{}, fmt.Errorf("bill with id %s not found", id)
 	}
 	return bill, nil
+}
+
+func (u *billUseCase) GetBillsWithPagination(paging model_util.Paging) ([]entity.Bill, error) {
+	bills, err := u.billRepo.GetWithPagination(paging)
+	if err != nil {
+		return nil, err
+	}
+
+	return bills, nil
 }

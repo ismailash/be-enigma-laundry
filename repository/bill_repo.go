@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"github.com/ismailash/be-enigma-laundry/utils/model_util"
 	"log"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 type BillRepository interface {
 	Create(billReq entity.Bill) (entity.Bill, error)
 	Get(id string) (entity.Bill, error)
+	GetWithPagination(paging model_util.Paging) ([]entity.Bill, error)
 }
 
 type billRepository struct {
@@ -164,4 +166,68 @@ func (r *billRepository) Get(id string) (entity.Bill, error) {
 	bill.BillDetails = billDetails
 
 	return bill, nil
+}
+
+func (r *billRepository) GetWithPagination(paging model_util.Paging) ([]entity.Bill, error) {
+	var bills []entity.Bill
+
+	query := `
+        SELECT
+            b.id,
+            b.bill_date,
+            c.id,
+            c.name,
+            c.phone_number,
+            c.address,
+            c.created_at,
+            c.updated_at,
+            u.id,
+            u.name,
+            u.email,
+            u.username,
+            u.role,
+            u.created_at,
+            u.updated_at,
+            b.created_at,
+            b.updated_at
+        FROM bills b
+        JOIN customers c ON c.id = b.customer_id
+        JOIN users u ON u.id = b.user_id
+        LIMIT $1 OFFSET $2
+    `
+
+	rows, err := r.db.Query(query, paging.Limit, paging.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var bill entity.Bill
+		err := rows.Scan(
+			&bill.Id,
+			&bill.BillDate,
+			&bill.Customer.Id,
+			&bill.Customer.Name,
+			&bill.Customer.PhoneNumber,
+			&bill.Customer.Address,
+			&bill.Customer.CreatedAt,
+			&bill.Customer.UpdatedAt,
+			&bill.Id,
+			&bill.User.Name,
+			&bill.User.Email,
+			&bill.User.Username,
+			&bill.User.Role,
+			&bill.User.CreatedAt,
+			&bill.User.UpdatedAt,
+			&bill.CreatedAt,
+			&bill.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		bills = append(bills, bill)
+	}
+
+	return bills, nil
 }

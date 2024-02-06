@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/ismailash/be-enigma-laundry/utils/model_util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,17 @@ func SendSingleResponse(ctx *gin.Context, description string, data any) {
 			Description: description,
 		},
 		Data: data,
+	})
+}
+
+func SendPagedResponse(ctx *gin.Context, description string, data []any, paging model_util.Paging) {
+	ctx.JSON(http.StatusOK, res.PagedResponse{
+		Status: res.Status{
+			Code:        http.StatusOK,
+			Description: description,
+		},
+		Data:   data,
+		Paging: paging,
 	})
 }
 

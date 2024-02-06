@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/ismailash/be-enigma-laundry/utils/model_util"
 	"log"
 	"net/http"
 
@@ -23,6 +24,7 @@ func (c *BillController) Route() {
 	br := c.rg.Group("/bills")
 	br.POST("/", c.createHandler)
 	br.GET("/:id", c.getHandler)
+	br.POST("/:id", c.getBillsWithPaginationHandler)
 }
 
 func (c *BillController) createHandler(ctx *gin.Context) {
@@ -58,4 +60,26 @@ func (c *BillController) getHandler(ctx *gin.Context) {
 	}
 
 	common.SendSingleResponse(ctx, "OK", res)
+}
+
+func (c *BillController) getBillsWithPaginationHandler(ctx *gin.Context) {
+	var paging model_util.Paging
+
+	if err := ctx.ShouldBindJSON(&paging); err != nil {
+		common.SendErrorResponse(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	bills, err := c.uc.GetBillsWithPagination(paging)
+	if err != nil {
+		common.SendErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	var billsInterface []any
+	for _, bill := range bills {
+		billsInterface = append(billsInterface, bill)
+	}
+
+	common.SendPagedResponse(ctx, "OK", billsInterface, paging)
 }

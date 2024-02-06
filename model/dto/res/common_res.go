@@ -1,0 +1,13 @@
+package res
+
+type Status struct {
+	Code        int    `json:"code"`
+	Description string `json:"description"`
+}
+
+type SingleResponse struct {
+	Status Status `json:"status"`
+	Data   any    `json:"data"`
+}
+
+// paged response

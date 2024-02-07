@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"github.com/ismailash/be-enigma-laundry/config"
+	"github.com/ismailash/be-enigma-laundry/delivery/middleware"
 	"github.com/ismailash/be-enigma-laundry/utils/model_util"
 	"log"
 	"net/http"
@@ -12,18 +14,19 @@ import (
 )
 
 type BillController struct {
-	uc usecase.BillUseCase
-	rg *gin.RouterGroup
+	uc             usecase.BillUseCase
+	rg             *gin.RouterGroup
+	authMiddleware middleware.AuthMiddleware
 }
 
-func NewBillController(uc usecase.BillUseCase, rg *gin.RouterGroup) *BillController {
-	return &BillController{uc: uc, rg: rg}
+func NewBillController(uc usecase.BillUseCase, rg *gin.RouterGroup, authMiddleware middleware.AuthMiddleware) *BillController {
+	return &BillController{uc: uc, rg: rg, authMiddleware: authMiddleware}
 }
 
 func (c *BillController) Route() {
-	br := c.rg.Group("/bills")
-	br.POST("/", c.createHandler)
-	br.GET("/:id", c.getHandler)
+	br := c.rg.Group(config.BillGroup, c.authMiddleware.RequireToken("admin", "employee"))
+	br.POST(config.BillPost, c.createHandler)
+	br.GET(config.BillGet, c.getHandler)
 	br.POST("/:id", c.getBillsWithPaginationHandler)
 }
 

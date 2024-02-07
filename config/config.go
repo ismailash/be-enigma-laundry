@@ -3,6 +3,8 @@ package config
 import (
 	"errors"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -23,6 +25,13 @@ type DbConfig struct {
 type Config struct {
 	ApiConfig
 	DbConfig
+	TokenConfig
+}
+
+type TokenConfig struct {
+	IssuerName      string
+	JwtSignatureKey []byte
+	JwtLifeTime     time.Duration
 }
 
 func NewConfig() (*Config, error) {
@@ -52,7 +61,18 @@ func (c *Config) readConfig() error {
 		Driver:   os.Getenv("DB_DRIVER"),
 	}
 
-	if c.ApiPort == "" || c.Host == "" || c.Port == "" || c.Name == "" || c.User == "" {
+	tokenLifeTime, err := strconv.Atoi(os.Getenv("TOKEN_LIFE_TIME"))
+	if err != nil {
+		return err
+	}
+
+	c.TokenConfig = TokenConfig{
+		IssuerName:      os.Getenv("TOKEN_ISSUER_NAME"),
+		JwtSignatureKey: []byte(os.Getenv("TOKEN_KEY")),
+		JwtLifeTime:     time.Duration(tokenLifeTime) * time.Minute,
+	}
+
+	if c.ApiPort == "" || c.Host == "" || c.Port == "" || c.Name == "" || c.User == "" || c.IssuerName == "" || c.JwtSignatureKey == nil || c.JwtLifeTime == 0 {
 		return errors.New("environment required")
 	}
 

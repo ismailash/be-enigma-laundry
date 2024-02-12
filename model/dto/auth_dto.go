@@ -7,4 +7,5 @@ type AuthRequestDto struct {
 
 type AuthResponseDto struct {
 	Token string `json:"token"`
+	// RefreshToken
 }

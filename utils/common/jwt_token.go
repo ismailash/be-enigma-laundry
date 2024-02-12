@@ -65,13 +65,12 @@ func (j *jwtToken) VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func (j *jwtToken) RefreshToken(oldTokenString string) (dto.AuthResponseDto, error) {
-	token, err := jwt.Parse(oldTokenString, func(token *jwt.Token) (interface{}, error) {
+func (j *jwtToken) RefreshToken(refreshToken string) (dto.AuthResponseDto, error) {
+	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
 		return j.cfg.JwtSignatureKey, nil
 	})
 
 	if err != nil {
-		log.Println("GAGAL PARSING BANG >>>>>>>>>>>>>>> ", oldTokenString)
 		return dto.AuthResponseDto{}, err
 	}
 
